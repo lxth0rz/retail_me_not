@@ -45,15 +45,15 @@ Apify.main(async () => {
 
             // A function to be evaluated by Playwright within the browser context.
             let source_url;
-            const data = await page.$$eval('div.sg-col-4-of-12.s-result-item.s-asin.sg-col-4-of-16.sg-col.s-widget-spacing-small.sg-col-4-of-20', ($posts, source_url) => {
+            const data = await page.$$eval('styles__LetterNavItem-dlih3y-0 RCKUi', ($posts, source_url) => {
 
                 const scrapedData = [];
 
                 // We're getting the title, rank and URL of each post on Hacker News.
                 $posts.forEach($post => {
                     scrapedData.push({
-                        asin: $post.getAttribute("data-asin"),
-                        title: $post.querySelector('span.a-size-base-plus.a-color-base.a-text-normal').innerText,
+                        //asin: $post.getAttribute("data-asin"),
+                        title: $post.querySelector('a').innerText,
                         source_url: source_url
                     });
                 });
