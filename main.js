@@ -8,10 +8,10 @@ Apify.main(async () => {
     // Apify.openRequestQueue() creates a preconfigured RequestQueue instance.
     // We add our first request to it - the initial page the crawler will visit.
 
-    const { startUrls } = await Apify.getInput();
-    // const startUrls = [
-    //     'https://www.amazon.com/s?k=python&crid'
-    // ];
+    // const { startUrls } = await Apify.getInput();
+    const startUrls = [
+        'https://www.retailmenot.com/coupons/',
+    ];
 
     const requestList = await Apify.openRequestList('start-urls', startUrls);
     const requestQueue = await Apify.openRequestQueue();
@@ -44,17 +44,17 @@ Apify.main(async () => {
             console.log(`Processing ${request.url}...`);
 
             // A function to be evaluated by Playwright within the browser context.
+            // eslint-disable-next-line camelcase
             let source_url;
-            const data = await page.$$eval('title', ($posts, source_url) => {
-
+            const data = await page.$$eval('#A-level', ($posts, source_url) => {
                 const scrapedData = [];
 
                 // We're getting the title, rank and URL of each post on Hacker News.
-                $posts.forEach($post => {
+                $posts.forEach(($post) => {
                     scrapedData.push({
-                        //asin: $post.getAttribute("data-asin"),
-                        title: $post.querySelector('a').innerText,
-                        source_url: source_url
+                        category_url: $post.getAttribute('href'),
+                        category_name: $post.innerText,
+                        source_url,
                     });
                 });
 
