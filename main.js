@@ -45,7 +45,7 @@ Apify.main(async () => {
 
             // A function to be evaluated by Playwright within the browser context.
             let source_url;
-            const data = await page.$$eval('styles__LetterNavItem-dlih3y-0 RCKUi', ($posts, source_url) => {
+            const data = await page.$$eval('title', ($posts, source_url) => {
 
                 const scrapedData = [];
 
