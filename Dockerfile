@@ -1,38 +1,33 @@
-FROM python:stretch
+# First, specify the base Docker image. You can read more about
+# the available images at https://sdk.apify.com/docs/guides/docker-images
+# You can also use any other image from Docker Hub.
+FROM apify/actor-node-playwright-chrome:16
 
-RUN \
-  apt-get update && \
-  apt-get install -yqq apt-transport-https
-RUN \
-  echo "deb https://deb.nodesource.com/node_10.x stretch main" > /etc/apt/sources.list.d/nodesource.list && \
-  wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
-  echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list && \
-  wget -qO- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-  apt-get update && \
-  apt-get install -yqq nodejs yarn && \
-  pip install -U pip && pip install pipenv && \
-  npm i -g npm@^6 && \
-  rm -rf /var/lib/apt/lists/* \
-  pip install scrapy
+# Second, copy just package.json and package-lock.json since it should be
+# the only file that affects "npm install" in the next step, to speed up the build
+COPY package*.json ./
 
+# Install NPM packages, skip optional and development dependencies to
+# keep the image small. Avoid logging too much and print the dependency
+# tree for debugging
+RUN npm --quiet set progress=false \
+ && npm install --only=prod --no-optional \
+ && echo "Installed NPM packages:" \
+ && (npm list --only=prod --no-optional --all || true) \
+ && echo "Node.js version:" \
+ && node --version \
+ && echo "NPM version:" \
+ && npm --version
+
+# Next, copy the remaining files and directories with the source code.
+# Since we do this after NPM install, quick build will be really fast
+# for most source file changes.
 COPY . ./
 
-RUN npm install
-
-# replace with pip install apify
-RUN pip install requests
-RUN pip install scrapy
-RUN pip install apify-client
-RUN pip install nltk
-RUN pip install scraperapi-sdk
-
-# Sets path to Chrome executable, this is used by Apify.launchPuppeteer()
-ENV APIFY_CHROME_EXECUTABLE_PATH=/usr/bin/google-chrome
-
-# Tell Node.js this is a production environemnt
-ENV NODE_ENV=production
-
-# Enable Node.js process to use a lot of memory (actor has limit of 32GB)
-ENV NODE_OPTIONS="--max_old_space_size=30000"
-
-CMD node main.js
+# Optionally, specify how to launch the source code of your actor.
+# By default, Apify's base Docker images define the CMD instruction
+# that runs the Node.js source code using the command specified
+# in the "scripts.start" section of the package.json file.
+# In short, the instruction looks something like this:
+#
+# CMD npm start

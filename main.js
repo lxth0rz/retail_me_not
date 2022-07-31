@@ -1,93 +1,87 @@
 const Apify = require('apify');
-const { spawn } = require('child_process');
-const fs = require('fs');
-const tar = require('tar');
-const tarfs = require('tar-fs');
-const execSync = require('child_process').execSync;
+// const playwright = require('playwright');
+const { handleStart, handleList, handleDetail } = require('./src/routes');
 
-Apify.getValue('INPUT').then((input) => {
+const { utils: { log } } = Apify;
 
-  if (input != null) {
+Apify.main(async () => {
+    // Apify.openRequestQueue() creates a preconfigured RequestQueue instance.
+    // We add our first request to it - the initial page the crawler will visit.
 
-    /* Disable scrapyCode input
-    // build spider
-    fs.writeFileSync('./actor/spiders/run.py', input.scrapyCode, (err) => {
-        if (err) console.log(err);
-        console.log('Successfully built scrapy spider.');
+    const { startUrls } = await Apify.getInput();
+    // const startUrls = [
+    //     'https://www.amazon.com/s?k=python&crid'
+    // ];
+
+    const requestList = await Apify.openRequestList('start-urls', startUrls);
+    const requestQueue = await Apify.openRequestQueue();
+    //const proxyConfiguration = await Apify.createProxyConfiguration();
+
+    // Create an instance of the PlaywrightCrawler class - a crawler
+    // that automatically loads the URLs in headless Chrome / Playwright.
+    const crawler = new Apify.PlaywrightCrawler({
+        requestList,
+        requestQueue,
+        //proxyConfiguration,
+        launchContext: {
+            // Here you can set options that are passed to the playwright .launch() function.
+            launchOptions: {
+                headless: false,
+            },
+        },
+
+        // Stop crawling after several pages
+        maxRequestsPerCrawl: 50,
+
+        // This function will be called for each URL to crawl.
+        // Here you can write the Playwright scripts you are familiar with,
+        // with the exception that browsers and pages are automatically managed by the Apify SDK.
+        // The function accepts a single parameter, which is an object with a lot of properties,
+        // the most important being:
+        // - request: an instance of the Request class with information such as URL and HTTP method
+        // - page: Playwright's Page object (see https://playwright.dev/docs/api/class-page)
+        handlePageFunction: async ({ request, page }) => {
+            console.log(`Processing ${request.url}...`);
+
+            // A function to be evaluated by Playwright within the browser context.
+            let source_url;
+            const data = await page.$$eval('div.sg-col-4-of-12.s-result-item.s-asin.sg-col-4-of-16.sg-col.s-widget-spacing-small.sg-col-4-of-20', ($posts, source_url) => {
+
+                const scrapedData = [];
+
+                // We're getting the title, rank and URL of each post on Hacker News.
+                $posts.forEach($post => {
+                    scrapedData.push({
+                        asin: $post.getAttribute("data-asin"),
+                        title: $post.querySelector('span.a-size-base-plus.a-color-base.a-text-normal').innerText,
+                        source_url: source_url
+                    });
+                });
+
+                return scrapedData;
+            }, source_url = request.url);
+
+            // Store the results to the default dataset.
+            await Apify.pushData(data);
+
+            // Find a link to the next page and enqueue it if it exists.
+            const infos = await Apify.utils.enqueueLinks({
+                page,
+                requestQueue,
+                selector: 'a.s-pagination-item.s-pagination-next.s-pagination-button.s-pagination-separator',
+            });
+
+            if (infos.length === 0) console.log(`${request.url} is the last page!`);
+        },
+
+        // This function is called if the page processing failed more than maxRequestRetries+1 times.
+        handleFailedRequestFunction: async ({ request }) => {
+            console.log(`Request ${request.url} failed too many times.`);
+        },
     });
-    */
 
-    // configure proxy
-    var useProxy = false;
-    var proxyAddress = `http://auto:${process.env.APIFY_PROXY_PASSWORD}@proxy.apify.com:8000`;
-    if (!input.proxyConfig.useApifyProxy && input.proxyConfig.proxyUrls != null && input.proxyConfig.proxyUrls.length !== 0) {
-      useProxy = true;
-      const proxyUrl = input.proxyConfig.proxyUrls[0];
-      proxyAddress = proxyUrl;
-    } else if (input.proxyConfig.useApifyProxy && input.proxyConfig.apifyProxyGroups != null && input.proxyConfig.apifyProxyGroups.length !== 0) {
-      useProxy = true;
-      const proxyGroups = input.proxyConfig.apifyProxyGroups.join('+');
-      proxyAddress = `http://groups-${proxyGroups}:${process.env.APIFY_PROXY_PASSWORD}@proxy.apify.com:8000`;
-    } else if (input.proxyConfig.useApifyProxy) {
-      useProxy = true;
-      proxyAddress = `http://auto:${process.env.APIFY_PROXY_PASSWORD}@proxy.apify.com:8000`;
-    }
+    // Run the crawler and wait for it to finish.
+    await crawler.run();
 
-  }
-
-  Apify.getValue('jobdir.tgz').then((stream) => {
-
-    // load persistent storage
-    if (stream != null) {
-        fs.writeFileSync('downloaded.tgz', stream);
-        try { execSync('rm -r ./crawls/'); } catch (err) {}
-        fs.createReadStream('downloaded.tgz').pipe(tarfs.extract('./'));
-    }
-
-    // if apify didn't auto-create
-    try { execSync('mkdir ./apify_storage/'); } catch (err) {}
-    try { execSync('mkdir ./apify_storage/datasets && mkdir ./apify_storage/datasets/default'); } catch (err) {}
-    try { execSync('mkdir ./apify_storage/key_value_stores && mkdir ./apify_storage/key_value_stores/default'); } catch (err) {}
-
-    // construct scrapy env vars
-    const env = Object.create(process.env);
-    if (useProxy) {
-      env.http_proxy = proxyAddress;
-    }
-
-    // update spider state every 5 seconds
-    const storeJobsInterval = setInterval(() => {
-        tar.c({ gzip: false, file: 'jobdir.tgz' }, ['crawls/']).then(() => {
-          Apify.setValue('jobdir.tgz', fs.readFileSync('jobdir.tgz'), { contentType: 'application/tar+gzip' });
-        });
-      }, 5000);
-
-    // run spiders  
-    const scrapyList = spawn('scrapy', ['list']);
-    const scrapyRun = spawn('xargs', ['-n', '1', 'scrapy', 'crawl'], { env });
-    scrapyList.stdout.on('data', (data) => {
-      scrapyRun.stdin.write(data);
-    });
-    scrapyList.stderr.on('data', (data) => {
-      console.log(`${data}`);
-    });
-    scrapyList.on('close', (code) => {
-      if (code !== 0) {
-        console.log(`scrapy list exited with code ${code}`);
-      }
-      scrapyRun.stdin.end();
-    });
-    scrapyRun.stdout.on('data', (data) => {
-      console.log(data.toString());
-    });
-    scrapyRun.stderr.on('data', (data) => {
-      console.log(`${data}`);
-    });
-    scrapyRun.on('close', (code) => {
-        clearInterval(storeJobsInterval);
-      if (code !== 0) {
-        console.log(`scrapy crawl process exited with code ${code}`);
-      }
-    });
-  });
+    console.log('Crawler finished.');
 });
