@@ -1,0 +1,27 @@
+{
+    "title": "Scrapy Executor",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "input_urls": {
+            "title": "Input URLs",
+            "type": "array",
+            "description": "URLs to start with",
+            "editor": "requestListSources"
+        },
+        "first_page_only": {
+                    "title": "First Page Only",
+                    "type": "boolean",
+                    "description": "Only extract ASINs from first overview page only the stops the actor.",
+                    "default": true
+        },
+       "proxyConfig": {
+            "title": "Proxy",
+            "type": "object",
+            "description": "Proxy servers let you bypass website protections, avoid IP address blocking and view content for other countries. Try to use the proxy if you are experiencing timeout errors.",
+            "default": {},
+            "editor": "proxy"
+        }
+    },
+    "required": ["input_urls"]
+}

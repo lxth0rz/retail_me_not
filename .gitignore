@@ -1,0 +1,12 @@
+.idea
+apify_storage
+node_modules
+crawls
+.DS_Store
+downloaded.tgz
+jobdir.tgz
+.vscode
+.eslintrc.json
+*.csv
+/Outputs-20220617-235700.csv
+*.pyc
