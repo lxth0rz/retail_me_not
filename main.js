@@ -52,7 +52,7 @@ Apify.main(async () => {
                 // We're getting the title, rank and URL of each post on Hacker News.
                 $posts.forEach(($post) => {
                     scrapedData.push({
-                        category_url: $post.getAttribute('href'),
+                        category_url: `https://www.retailmenot.com${$post.getAttribute('href')}`,
                         category_name: $post.innerText,
                         source_url,
                     });
