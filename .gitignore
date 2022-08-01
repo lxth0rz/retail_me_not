@@ -3,3 +3,5 @@
 .idea
 node_modules
 *.json
+apify_storage/request_queues/default/db.sqlite
+apify_storage/key_value_stores/default/SDK_start-urls-REQUEST_LIST_REQUESTS.bin

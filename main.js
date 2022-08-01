@@ -10,7 +10,7 @@ Apify.main(async () => {
 
     // const { startUrls } = await Apify.getInput();
     const startUrls = [
-        'https://www.retailmenot.com/coupons/',
+        'https://www.retailmenot.com/coupons/?nav=A',
     ];
 
     const requestList = await Apify.openRequestList('start-urls', startUrls);
@@ -46,7 +46,7 @@ Apify.main(async () => {
             // A function to be evaluated by Playwright within the browser context.
             // eslint-disable-next-line camelcase
             let source_url;
-            const data = await page.$$eval('#A-level', ($posts, source_url) => {
+            const data = await page.$$eval('.styles__LinkListEntry-dlih3y-2.iswSRg', ($posts, source_url) => {
                 const scrapedData = [];
 
                 // We're getting the title, rank and URL of each post on Hacker News.
@@ -68,7 +68,7 @@ Apify.main(async () => {
             const infos = await Apify.utils.enqueueLinks({
                 page,
                 requestQueue,
-                selector: 'a.s-pagination-item.s-pagination-next.s-pagination-button.s-pagination-separator',
+                selector: '.styles__LetterNavItemLink-bwj2bv-2.eoXEWS',
             });
 
             if (infos.length === 0) console.log(`${request.url} is the last page!`);
