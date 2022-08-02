@@ -13,7 +13,7 @@ Apify.main(async () => {
 
     let startUrls = [];
     if (CategoriesOnly === true) {
-        console.log('Testo Test Now');
+        console.log('CategoriesOnly === true');
         startUrls = [
             'https://www.retailmenot.com/coupons/?nav=A',
         ];
