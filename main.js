@@ -13,8 +13,7 @@ Apify.main(async () => {
 
     let dataset;
     let startUrls = [];
-    if (CategoriesOnly === true)
-
+    if (CategoriesOnly === true) {
         dataset = await Apify.openDataset('coco-is-not-wawa');
 
         console.log('CategoriesOnly === true');
