@@ -11,24 +11,23 @@ Apify.main(async () => {
     // https://sdk.apify.com/docs/examples/accept-user-input
     const { CategoriesOnly } = await Apify.getInput();
 
-    const ddd = Apify.getEnv();
-    console.log(ddd);
+    const envObj = Apify.getEnv();
+    const { userId } = envObj;
 
     let dataset;
     let startUrls = [];
     if (CategoriesOnly === true) {
-        dataset = await Apify.openDataset('retail-me-not-cats');
-
-        // set as default dataset or check if user is MedH
-
-        const datasetInfo = await dataset.getInfo();
-        const { itemCount } = datasetInfo;
-        if (itemCount > 0) {
-            await dataset.drop();
+        if (userId === '8pcsYfKdPip3DPAHv') {
             dataset = await Apify.openDataset('retail-me-not-cats');
+            // set as default dataset or check if user is MedH
+            const datasetInfo = await dataset.getInfo();
+            const { itemCount } = datasetInfo;
+            if (itemCount > 0) {
+                await dataset.drop();
+                dataset = await Apify.openDataset('retail-me-not-cats')
+            }
         }
 
-        console.log(datasetInfo.itemCount);
         console.log('CategoriesOnly === true');
         startUrls = [
             'https://www.retailmenot.com/coupons/?nav=A',
@@ -84,8 +83,11 @@ Apify.main(async () => {
             }, source_url = request.url);
 
             // Store the results to the default dataset.
-            // await Apify.pushData(data);
-            await dataset.pushData(data);
+            if (userId === '8pcsYfKdPip3DPAHv') {
+                await dataset.pushData(data);
+            } else {
+                await Apify.pushData(data);
+            }
 
             // Find a link to the next page and enqueue it if it exists.
             const infos = await Apify.utils.enqueueLinks({
