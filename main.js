@@ -16,6 +16,10 @@ Apify.main(async () => {
     if (CategoriesOnly === true) {
         dataset = await Apify.openDataset('coco-is-not-wawa');
 
+        // set as default dataset or check if user is MedH
+
+        const datasetInfo = await dataset.getInfo();
+        console.log(datasetInfo);
         console.log('CategoriesOnly === true');
         startUrls = [
             'https://www.retailmenot.com/coupons/?nav=A',
@@ -24,14 +28,14 @@ Apify.main(async () => {
 
     const requestList = await Apify.openRequestList('start-urls', startUrls);
     const requestQueue = await Apify.openRequestQueue();
-    //const proxyConfiguration = await Apify.createProxyConfiguration();
+    // const proxyConfiguration = await Apify.createProxyConfiguration();
 
     // Create an instance of the PlaywrightCrawler class - a crawler
     // that automatically loads the URLs in headless Chrome / Playwright.
     const crawler = new Apify.PlaywrightCrawler({
         requestList,
         requestQueue,
-        //proxyConfiguration,
+        // proxyConfiguration,
         launchContext: {
             // Here you can set options that are passed to the playwright .launch() function.
             launchOptions: {
@@ -71,7 +75,7 @@ Apify.main(async () => {
             }, source_url = request.url);
 
             // Store the results to the default dataset.
-            //await Apify.pushData(data);
+            // await Apify.pushData(data);
             await dataset.pushData(data);
 
             // Find a link to the next page and enqueue it if it exists.
