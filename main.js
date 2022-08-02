@@ -14,12 +14,18 @@ Apify.main(async () => {
     let dataset;
     let startUrls = [];
     if (CategoriesOnly === true) {
-        dataset = await Apify.openDataset('coco-is-not-wawa');
+        dataset = await Apify.openDataset('retail-me-not-cats');
 
         // set as default dataset or check if user is MedH
 
         const datasetInfo = await dataset.getInfo();
-        console.log(datasetInfo);
+        const { itemCount } = datasetInfo;
+        if (itemCount > 0) {
+            await dataset.drop();
+            dataset = await Apify.openDataset('retail-me-not-cats');
+        }
+
+        console.log(datasetInfo.itemCount);
         console.log('CategoriesOnly === true');
         startUrls = [
             'https://www.retailmenot.com/coupons/?nav=A',
