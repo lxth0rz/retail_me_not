@@ -11,6 +11,9 @@ Apify.main(async () => {
     // https://sdk.apify.com/docs/examples/accept-user-input
     const { CategoriesOnly } = await Apify.getInput();
 
+    const ddd = Apify.getEnv();
+    console.log(ddd);
+
     let dataset;
     let startUrls = [];
     if (CategoriesOnly === true) {
