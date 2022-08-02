@@ -1,20 +1,21 @@
 {
-  "title": "Retail Me Not Inputs",
-  "description": "Retail Me Not Inputs",
-  "type": "object",
-  "schemaVersion": 1,
-  "properties": {
-    "startUrls": {
-      "title": "Start URLs",
-      "type": "array",
-      "description": "URLs to start with.",
-      "editor": "requestListSources",
-      "prefill": [
-        { "url": "https://apify.com" }
-      ]
-    }
-  },
-  "required": [
-    "startUrls"
-  ]
+    "title": "Inputs",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "CategoriesOnly": {
+            "title": "Categories Only",
+            "type": "boolean",
+            "description": "Scrape only the categories names and URLs from RetailMeNot.",
+            "default": false
+        },
+        "proxyConfig": {
+            "title": "Proxy",
+            "type": "object",
+            "description": "Proxy servers let you bypass website protections, avoid IP address blocking and view content for other countries. Try to use the proxy if you are experiencing timeout errors.",
+            "default": {},
+            "editor": "proxy"
+        }
+    },
+    "required": ["CategoriesOnly"]
 }
