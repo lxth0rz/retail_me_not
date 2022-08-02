@@ -8,11 +8,15 @@ Apify.main(async () => {
     // Apify.openRequestQueue() creates a preconfigured RequestQueue instance.
     // We add our first request to it - the initial page the crawler will visit.
 
-    // const input = await Apify.getInput();
+    // https://sdk.apify.com/docs/examples/accept-user-input
     const { CategoriesOnly } = await Apify.getInput();
 
+    let dataset;
     let startUrls = [];
-    if (CategoriesOnly === true) {
+    if (CategoriesOnly === true)
+
+        dataset = await Apify.openDataset('coco-is-not-wawa');
+
         console.log('CategoriesOnly === true');
         startUrls = [
             'https://www.retailmenot.com/coupons/?nav=A',
@@ -68,7 +72,8 @@ Apify.main(async () => {
             }, source_url = request.url);
 
             // Store the results to the default dataset.
-            await Apify.pushData(data);
+            //await Apify.pushData(data);
+            await dataset.pushData(data);
 
             // Find a link to the next page and enqueue it if it exists.
             const infos = await Apify.utils.enqueueLinks({
