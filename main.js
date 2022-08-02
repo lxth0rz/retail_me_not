@@ -9,8 +9,10 @@ Apify.main(async () => {
     // We add our first request to it - the initial page the crawler will visit.
 
     const input = await Apify.getInput();
+    const { CategoriesOnly } = await Apify.getInput();
     console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
     console.log(input);
+    console.log(CategoriesOnly);
 
     //const { startUrls } = await Apify.getInput();
     // const startUrls = [
