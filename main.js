@@ -8,10 +8,14 @@ Apify.main(async () => {
     // Apify.openRequestQueue() creates a preconfigured RequestQueue instance.
     // We add our first request to it - the initial page the crawler will visit.
 
-    // const { startUrls } = await Apify.getInput();
-    const startUrls = [
-        'https://www.retailmenot.com/coupons/?nav=A',
-    ];
+    const input = await Apify.getInput();
+    console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>';
+    console.log(input);
+
+    //const { startUrls } = await Apify.getInput();
+    // const startUrls = [
+    //     'https://www.retailmenot.com/coupons/?nav=A',
+    // ];
 
     const requestList = await Apify.openRequestList('start-urls', startUrls);
     const requestQueue = await Apify.openRequestQueue();
