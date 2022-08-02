@@ -21,14 +21,14 @@ Apify.main(async () => {
 
     const requestList = await Apify.openRequestList('start-urls', startUrls);
     const requestQueue = await Apify.openRequestQueue();
-    const proxyConfiguration = await Apify.createProxyConfiguration();
+    //const proxyConfiguration = await Apify.createProxyConfiguration();
 
     // Create an instance of the PlaywrightCrawler class - a crawler
     // that automatically loads the URLs in headless Chrome / Playwright.
     const crawler = new Apify.PlaywrightCrawler({
         requestList,
         requestQueue,
-        proxyConfiguration,
+        //proxyConfiguration,
         launchContext: {
             // Here you can set options that are passed to the playwright .launch() function.
             launchOptions: {
